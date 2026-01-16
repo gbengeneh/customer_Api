@@ -1,0 +1,25 @@
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: niitdevcustomerdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  app:
+    build: .
+    ports:
+      - "7074:7074"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/niitdevcustomerdb
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: 123
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:
