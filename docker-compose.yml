@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres:15
+    image: postgres:1
     environment:
       POSTGRES_DB: niitdevcustomerdb
       POSTGRES_USER: postgres
