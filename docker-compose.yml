@@ -1,6 +1,10 @@
+version: '3.8'
+
 services:
+  # PostgreSQL Database for Customer API
   postgres:
-    image: postgres:1
+    image: postgres:16-alpine
+    container_name: customer-postgres
     environment:
       POSTGRES_DB: niitdevcustomerdb
       POSTGRES_USER: postgres
@@ -9,17 +13,52 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - microservices-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
 
-  app:
-    build: .
+  # Customer API Service
+  customer-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: customer-api
     ports:
       - "7074:7074"
+    networks:
+      - microservices-network
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/niitdevcustomerdb
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: 123
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/niitdevcustomerdb
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=123
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://host.docker.internal:8761/eureka/
+      - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
+      - EUREKA_INSTANCE_HOSTNAME=customer-api
+      - JAVA_OPTS=-Xmx512m -Xms256m
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:7074/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
 volumes:
   postgres_data:
+    name: customer-postgres-data
+
+networks:
+  microservices-network:
+    external: true
+    name: microservices-network
