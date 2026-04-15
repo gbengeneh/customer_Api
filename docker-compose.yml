@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # PostgreSQL Database for Customer API
   postgres:
@@ -8,7 +6,7 @@ services:
     environment:
       POSTGRES_DB: niitdevcustomerdb
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 123
+      POSTGRES_PASSWORD: 123q
     ports:
       - "5432:5432"
     volumes:
@@ -37,9 +35,6 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/niitdevcustomerdb
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=123
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://host.docker.internal:8761/eureka/
-      - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
-      - EUREKA_INSTANCE_HOSTNAME=customer-api
       - JAVA_OPTS=-Xmx512m -Xms256m
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:7074/actuator/health"]
@@ -60,5 +55,4 @@ volumes:
 
 networks:
   microservices-network:
-    external: true
-    name: microservices-network
+    driver: bridge
