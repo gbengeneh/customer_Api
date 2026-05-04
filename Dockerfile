@@ -14,15 +14,13 @@ RUN ./mvnw dependency:go-offline -B
 # Copy source code
 COPY src ./src
 
-# Build the application
-RUN ./mvnw clean package -DskipTests
 
 # Runtime stage
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
 # Copy the built jar from build stage
-COPY --from=build /app/target/customer_api-0.0.1-SNAPSHOT.jar app.jar
+COPY target/customer_api-0.0.1-SNAPSHOT.jar app.jar
 
 # Expose port
 EXPOSE 7074
